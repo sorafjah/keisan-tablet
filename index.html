@@ -43,7 +43,6 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            /* JavaScriptで制御するためCSSのsmoothは削除 */
         }
 
         /* サイドバー（設定エリア）のスタイル */
@@ -227,7 +226,6 @@
         const checkAnswersBtn = document.getElementById('check-answers-btn');
         const retryBtn = document.getElementById('retry-btn');
         const newProblemBtn = document.getElementById('new-problem-btn');
-        // ★★★ 追加: タッチデバイスかどうかの判定 ★★★
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 
@@ -330,21 +328,24 @@
             inputs.forEach(input => {
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter') {
-                        event.preventDefault(); // Enterキーでのフォーム送信を防ぐ
+                        event.preventDefault();
                         
                         const currentIndex = parseInt(input.dataset.index, 10);
                         const nextIndex = currentIndex + 1;
                         const nextInput = document.querySelector(`.answer-input[data-index="${nextIndex}"]`);
                         
-                        // PCとiPadでスクロールの挙動を切り替える
+                        // デバイスの種類に応じてスクロール方法を定義
                         const scrollBehavior = isTouchDevice ? 'auto' : 'smooth';
+                        // ★ iPadでは'nearest'を、PCでは'center'を使用する
+                        const scrollBlock = isTouchDevice ? 'nearest' : 'center'; 
 
                         if (nextInput) {
                             requestAnimationFrame(() => {
                                 nextInput.focus();
                                 const nextItem = nextInput.closest('.problem-item');
                                 if (nextItem) {
-                                    nextItem.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
+                                    // 定義したスクロール方法を適用
+                                    nextItem.scrollIntoView({ behavior: scrollBehavior, block: scrollBlock });
                                 }
                             });
                         } else {
