@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>計算トレーニング for iPad</title>
+    <title>けいさんしよう for iPad</title>
     <style>
         /* 基本的なスタイル */
         :root {
@@ -130,9 +130,9 @@
             flex-grow: 1; padding: 20px; font-size: 1.4em; font-weight: bold;
             color: white; border: none; border-radius: 8px; cursor: pointer;
         }
-        #check-answers-btn { background-color: var(--correct-color); }
+        #check-answers-btn { background-color: var(--primary-color); } /* 色を変更 */
         #retry-btn { background-color: var(--primary-color); }
-        #new-problem-btn { background-color: var(--secondary-color); }
+        #new-problem-btn { background-color: var(--primary-color); } /* 色を変更 */
     </style>
 </head>
 <body>
@@ -148,19 +148,19 @@
         <!-- 他の設定項目は変更なし -->
         <h3>たしざん</h3>
         <div class="input-group">
-            <div class="input-item"><label for="add_ss">ひとけた＋ひとけた</label><input type="number" id="add_ss" class="q-input" min="0" value="5"></div>
+            <div class="input-item"><label for="add_ss">ひとけた＋ひとけた</label><input type="number" id="add_ss" class="q-input" min="0" value="2"></div>
             <div class="input-item"><label for="add_u20s">10から20まで+ひとけた</label><input type="number" id="add_u20s" class="q-input" min="0" value="0"></div>
             <div class="input-item"><label for="add_u40u40">10から40まで+10から40まで</label><input type="number" id="add_u40u40" class="q-input" min="0" value="0"></div>
         </div>
         <h3>ひきざん</h3>
         <div class="input-group">
-            <div class="input-item"><label for="sub_ss">ひとけた－ひとけた</label><input type="number" id="sub_ss" class="q-input" min="0" value="5"></div>
+            <div class="input-item"><label for="sub_ss">ひとけた－ひとけた</label><input type="number" id="sub_ss" class="q-input" min="0" value="2"></div>
             <div class="input-item"><label for="sub_u20s">10から20まで－ひとけた</label><input type="number" id="sub_u20s" class="q-input" min="0" value="0"></div>
             <div class="input-item"><label for="sub_u40u40">10から40まで－10から40まで</label><input type="number" id="sub_u40u40" class="q-input" min="0" value="0"></div>
         </div>
         <h3>かけざん</h3>
         <div class="input-group">
-            <div class="input-item"><label for="mul_count">合計問題数</label><input type="number" id="mul_count" class="q-input" min="0" value="5"></div>
+            <div class="input-item"><label for="mul_count">合計問題数</label><input type="number" id="mul_count" class="q-input" min="0" value="2"></div>
             <label style="margin-top: 10px; font-weight:normal;">対象の段 (複数選択可)</label>
             <div id="mul_tables" style="font-size:0.9em;">
                 <input type="checkbox" id="table2" value="2" checked><label for="table2" style="display:inline-block; margin-right:5px;">2</label>
@@ -175,7 +175,7 @@
         </div>
         <h3>わりざん (あまりなし)</h3>
         <div class="input-group">
-            <div class="input-item"><label for="div_kuku">かけざん九九の範囲内</label><input type="number" id="div_kuku" class="q-input" min="0" value="5"></div>
+            <div class="input-item"><label for="div_kuku">かけざん九九の範囲内</label><input type="number" id="div_kuku" class="q-input" min="0" value="2"></div>
             <div class="input-item"><label for="div_u99s">99まで÷ひとけた</label><input type="number" id="div_u99s" class="q-input" min="0" value="0"></div>
         </div>
         <button id="generateBtn">もんだいスタート！</button>
@@ -184,7 +184,7 @@
     <div id="main-content">
         <div id="main-header">
             <button id="show-settings-btn" class="hidden">＜ 設定にもどる</button>
-            <h2>✏️ 計算トレーニング</h2>
+            <h2>✏️ けいさんしよう</h2>
         </div>
         <div id="problem-area">
             <ul id="problem-list"></ul>
