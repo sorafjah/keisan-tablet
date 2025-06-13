@@ -86,8 +86,8 @@
             padding: 0;
             margin: 0;
             flex-grow: 1; /* リストが残りのスペースを埋める */
-            /* キーボード対策でリストの下に十分な余白を確保 */
-            padding-bottom: 40vh;
+            /* ★修正: キーボード対策の余白を少し小さくする */
+            padding-bottom: 150px;
         }
         .problem-item {
             display: flex;
@@ -266,10 +266,11 @@
             allProblems.forEach((problem, index) => {
                 const listItem = document.createElement('li');
                 listItem.className = 'problem-item';
+                // ★修正: 各入力欄に data-index 属性を追加
                 listItem.innerHTML = `
                     <span class="problem-number">${index + 1}.</span>
                     <span class="problem-equation">${problem.p}</span>
-                    <input type="number" class="answer-input" data-answer="${problem.a}">
+                    <input type="number" class="answer-input" data-index="${index}" data-answer="${problem.a}">
                     <span class="feedback"></span>
                 `;
                 problemList.appendChild(listItem);
@@ -323,42 +324,35 @@
             if(inputs.length > 0) inputs[0].focus();
         };
 
-        // --- ここから修正 ---
+        // --- ★ここから修正 ---
         const setupEnterKeyNavigation = () => {
-            const inputs = Array.from(document.querySelectorAll('.answer-input'));
-            inputs.forEach((input, index) => {
+            const inputs = document.querySelectorAll('.answer-input');
+            inputs.forEach(input => {
                 input.addEventListener('keydown', (event) => {
-                    // Enterキーが押された時だけ処理する
                     if (event.key === 'Enter') {
-                        // デフォルトの動作（改行やフォーム送信）をキャンセル
                         event.preventDefault();
                         
-                        const nextIndex = index + 1;
+                        // 現在の入力欄のインデックスを取得
+                        const currentIndex = parseInt(input.dataset.index, 10);
+                        const nextIndex = currentIndex + 1;
+
+                        // 次のインデックスを持つ入力欄を直接検索
+                        const nextInput = document.querySelector(`.answer-input[data-index="${nextIndex}"]`);
                         
-                        // もし次の問題があるなら
-                        if (nextIndex < inputs.length) {
-                            const nextInput = inputs[nextIndex];
-                            // 次の入力欄にフォーカスを移動
+                        if (nextInput) {
+                            // 次の入力欄があれば、そこにフォーカスしてスクロール
                             nextInput.focus();
-                            // 画面の中央にスムーズにスクロールさせる
-                            // これにより、特にiPadなどでソフトウェアキーボードが表示されても入力欄が見やすくなる
                             nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         } else {
-                            // ★修正点: これが最後の問題の場合の処理
-                            // 以前は自動で `checkAnswersBtn.click()` を呼び出して答え合わせをしていた。
-                            // これを、ボタンにフォーカスを移動するだけの処理に変更。
-                            // これにより、ユーザーが手動で「こたえあわせ」ボタンをタップ（またはEnter）する必要がある。
-                            // この変更が、最後の問題で意図せずスクロールしてしまう問題の解決にも繋がる。
+                            // なければ（＝最後の問題なら）、答え合わせボタンにフォーカス
                             checkAnswersBtn.focus();
-                            
-                            // ボタンが画面内に表示されるように、コントロールパネル全体をスクロール
                             controlPanel.scrollIntoView({ behavior: 'smooth', block: 'end' });
                         }
                     }
                 });
             });
         };
-        // --- ここまで修正 ---
+        // --- ★ここまで修正 ---
         
         const showSettings = () => {
             sidebar.classList.remove('hidden');
