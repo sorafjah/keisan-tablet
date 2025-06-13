@@ -86,7 +86,6 @@
             padding: 0;
             margin: 0;
             flex-grow: 1; /* リストが残りのスペースを埋める */
-            /* ★修正: キーボード対策の余白を少し小さくする */
             padding-bottom: 150px;
         }
         .problem-item {
@@ -266,7 +265,6 @@
             allProblems.forEach((problem, index) => {
                 const listItem = document.createElement('li');
                 listItem.className = 'problem-item';
-                // ★修正: 各入力欄に data-index 属性を追加
                 listItem.innerHTML = `
                     <span class="problem-number">${index + 1}.</span>
                     <span class="problem-equation">${problem.p}</span>
@@ -276,9 +274,7 @@
                 problemList.appendChild(listItem);
             });
             
-            // Enterキーでの移動設定を呼び出す
             setupEnterKeyNavigation();
-            // 最初の問題にフォーカスする
             document.querySelector('.answer-input').focus();
         };
 
@@ -320,7 +316,7 @@
                 feedbackEl.classList.remove('correct', 'incorrect');
             });
             resetControlPanel(); 
-            document.getElementById('main-content').scrollTop = 0; // スクロールを一番上に戻す
+            document.getElementById('main-content').scrollTop = 0;
             if(inputs.length > 0) inputs[0].focus();
         };
 
@@ -332,19 +328,21 @@
                     if (event.key === 'Enter') {
                         event.preventDefault();
                         
-                        // 現在の入力欄のインデックスを取得
                         const currentIndex = parseInt(input.dataset.index, 10);
                         const nextIndex = currentIndex + 1;
-
-                        // 次のインデックスを持つ入力欄を直接検索
                         const nextInput = document.querySelector(`.answer-input[data-index="${nextIndex}"]`);
                         
                         if (nextInput) {
-                            // 次の入力欄があれば、そこにフォーカスしてスクロール
-                            nextInput.focus();
-                            nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            // requestAnimationFrame を使い、ブラウザの描画タイミングに合わせて処理を行う
+                            // これにより、フォーカス移動とスクロールの競合を防ぐ
+                            requestAnimationFrame(() => {
+                                nextInput.focus();
+                                // スクロールオプションを 'nearest' に変更
+                                // これにより、要素が画面外にある場合のみ、最小限のスクロールが行われる
+                                nextInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            });
                         } else {
-                            // なければ（＝最後の問題なら）、答え合わせボタンにフォーカス
+                            // 最後の問題の場合は、答え合わせボタンにフォーカス
                             checkAnswersBtn.focus();
                             controlPanel.scrollIntoView({ behavior: 'smooth', block: 'end' });
                         }
