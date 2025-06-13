@@ -27,7 +27,6 @@
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             transition: width 0.3s ease;
             flex-shrink: 0;
-            /* REVISED: シンプルなスクロールコンテナに変更 */
             overflow-y: auto;
             padding: 20px;
         }
@@ -80,13 +79,15 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            flex-grow: 1;
         }
         #problem-list {
             list-style: none;
             padding: 0;
             margin: 0;
             flex-grow: 1; /* リストが残りのスペースを埋める */
+             /* REVISED: キーボード対策でリストの下に十分な余白を確保 */
+            padding-bottom: 40vh;
         }
         .problem-item {
             display: flex;
@@ -109,6 +110,7 @@
 
         /* コントロールパネルのスタイル (問題リストの末尾に配置) */
         #control-panel {
+            flex-shrink: 0; /* コントロールパネルが縮まないように */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -124,6 +126,7 @@
             text-align: center;
             font-size: 1.6em;
             font-weight: bold;
+            min-height: 1.2em; /* REVISED: 「がんばろう」削除後のレイアウトが崩れないように高さを確保 */
         }
         .button-container {
             display: flex;
@@ -142,7 +145,6 @@
 <body>
 
     <div id="sidebar">
-        <!-- REVISED: ラッパーを削除し、コンテンツを直接配置 -->
         <h3 style="margin-top: 0;">出題順</h3>
         <div class="input-group">
             <input type="radio" id="order-sequential" name="order" value="sequential" checked>
@@ -185,8 +187,8 @@
         </div>
         <button id="generateBtn">もんだいスタート！</button>
 
-        <!-- REVISED: ユーザーの提案通り、スクロール用の空白を追加 -->
-        <div style="height: 50px;"></div>
+        <!-- REVISED: ユーザーの提案通り、スクロール用の空白を増量 -->
+        <div style="height: 150px;"></div>
     </div>
 
     <div id="main-content">
@@ -197,7 +199,7 @@
         <div id="problem-area">
             <ul id="problem-list"></ul>
             <div id="control-panel" class="hidden">
-                 <div id="result-display">がんばろう！</div>
+                 <div id="result-display"></div>
                  <div class="button-container">
                     <button id="check-answers-btn" class="action-button">こたえあわせ</button>
                     <button id="retry-btn" class="action-button hidden">もういちど</button>
@@ -344,7 +346,8 @@
         };
 
         const resetControlPanel = () => {
-            resultDisplay.textContent = 'がんばろう！';
+            // REVISED: 「がんばろう！」を削除
+            resultDisplay.textContent = '';
             checkAnswersBtn.classList.remove('hidden');
             retryBtn.classList.add('hidden');
             newProblemBtn.classList.add('hidden');
