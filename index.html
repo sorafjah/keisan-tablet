@@ -25,18 +25,25 @@
             background-color: #ffffff;
             border-right: 1px solid #ddd;
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-            transition: width 0.3s ease, padding 0.3s ease;
+            transition: width 0.3s ease;
             flex-shrink: 0;
-            /* REVISED: シンプルなスクロールコンテナに変更 */
-            overflow-y: auto;
-            padding: 20px;
+            /* REVISED: ボタンを固定するためのFlexboxレイアウト */
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
         #sidebar.hidden {
             width: 0;
-            padding: 0;
             border-right: none;
             overflow: hidden;
         }
+        /* REVISED: 設定項目をスクロールさせるためのエリア */
+        #sidebar-scroll-area {
+            flex-grow: 1; /* 利用可能な高さいっぱいに広がる */
+            overflow-y: auto; /* 内容がはみ出たらスクロール */
+            padding: 20px;
+        }
+        
         #main-content {
             flex-grow: 1;
             padding: 20px;
@@ -68,10 +75,15 @@
         .input-item label { flex: 1; margin-bottom: 0; font-weight: normal; }
         .input-item input[type="number"] { width: 60px; padding: 10px; border-radius: 4px; border: 1px solid #ccc; text-align: center; font-size: 1em; }
         
+        /* REVISED: スタートボタンをサイドバー下部に固定するためのラッパー */
+        #generateBtn-wrapper {
+            flex-shrink: 0; /* ボタンエリアが縮まないように */
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
         #generateBtn {
             width: 100%; padding: 15px; font-size: 1.2em; font-weight: bold; background-color: var(--primary-color);
             color: white; border: none; border-radius: 8px; cursor: pointer;
-            margin-top: 30px; /* 設定項目とのスペースを確保 */
         }
 
         /* 問題表示エリアのスタイル */
@@ -141,48 +153,53 @@
 <body>
 
     <div id="sidebar">
-        <!-- REVISED: ラッパーを削除し、コンテンツを直接配置 -->
-        <h3 style="margin-top: 0;">出題順</h3>
-        <div class="input-group">
-            <input type="radio" id="order-sequential" name="order" value="sequential" checked>
-            <label for="order-sequential" style="display: inline-block;">たしざんから順に出題</label><br>
-            <input type="radio" id="order-random" name="order" value="random">
-            <label for="order-random" style="display: inline-block;">混ぜてランダム出題</label>
-        </div>
-        
-        <h3>たしざん</h3>
-        <div class="input-group">
-            <div class="input-item"><label for="add_ss">ひとけた＋ひとけた</label><input type="number" id="add_ss" class="q-input" min="0" value="2"></div>
-            <div class="input-item"><label for="add_u20s">10から20まで+ひとけた</label><input type="number" id="add_u20s" class="q-input" min="0" value="0"></div>
-            <div class="input-item"><label for="add_u40u40">10から40まで+10から40まで</label><input type="number" id="add_u40u40" class="q-input" min="0" value="0"></div>
-        </div>
-        <h3>ひきざん</h3>
-        <div class="input-group">
-            <div class="input-item"><label for="sub_ss">ひとけた－ひとけた</label><input type="number" id="sub_ss" class="q-input" min="0" value="2"></div>
-            <div class="input-item"><label for="sub_u20s">10から20まで－ひとけた</label><input type="number" id="sub_u20s" class="q-input" min="0" value="0"></div>
-            <div class="input-item"><label for="sub_u40u40">10から40まで－10から40まで</label><input type="number" id="sub_u40u40" class="q-input" min="0" value="0"></div>
-        </div>
-        <h3>かけざん</h3>
-        <div class="input-group">
-            <div class="input-item"><label for="mul_count">合計問題数</label><input type="number" id="mul_count" class="q-input" min="0" value="2"></div>
-            <label style="margin-top: 10px; font-weight:normal;">対象の段 (複数選択可)</label>
-            <div id="mul_tables" style="font-size:0.9em;">
-                <input type="checkbox" id="table2" value="2" checked><label for="table2" style="display:inline-block; margin-right:5px;">2</label>
-                <input type="checkbox" id="table3" value="3" checked><label for="table3" style="display:inline-block; margin-right:5px;">3</label>
-                <input type="checkbox" id="table4" value="4"><label for="table4" style="display:inline-block; margin-right:5px;">4</label>
-                <input type="checkbox" id="table5" value="5"><label for="table5" style="display:inline-block; margin-right:5px;">5</label>
-                <input type="checkbox" id="table6" value="6"><label for="table6" style="display:inline-block; margin-right:5px;">6</label>
-                <input type="checkbox" id="table7" value="7"><label for="table7" style="display:inline-block; margin-right:5px;">7</label>
-                <input type="checkbox" id="table8" value="8"><label for="table8" style="display:inline-block; margin-right:5px;">8</label>
-                <input type="checkbox" id="table9" value="9"><label for="table9" style="display:inline-block;">9</label>
+        <!-- REVISED: スクロール用のラッパーを追加 -->
+        <div id="sidebar-scroll-area">
+            <h3 style="margin-top: 0;">出題順</h3>
+            <div class="input-group">
+                <input type="radio" id="order-sequential" name="order" value="sequential" checked>
+                <label for="order-sequential" style="display: inline-block;">たしざんから順に出題</label><br>
+                <input type="radio" id="order-random" name="order" value="random">
+                <label for="order-random" style="display: inline-block;">混ぜてランダム出題</label>
+            </div>
+            
+            <h3>たしざん</h3>
+            <div class="input-group">
+                <div class="input-item"><label for="add_ss">ひとけた＋ひとけた</label><input type="number" id="add_ss" class="q-input" min="0" value="2"></div>
+                <div class="input-item"><label for="add_u20s">10から20まで+ひとけた</label><input type="number" id="add_u20s" class="q-input" min="0" value="0"></div>
+                <div class="input-item"><label for="add_u40u40">10から40まで+10から40まで</label><input type="number" id="add_u40u40" class="q-input" min="0" value="0"></div>
+            </div>
+            <h3>ひきざん</h3>
+            <div class="input-group">
+                <div class="input-item"><label for="sub_ss">ひとけた－ひとけた</label><input type="number" id="sub_ss" class="q-input" min="0" value="2"></div>
+                <div class="input-item"><label for="sub_u20s">10から20まで－ひとけた</label><input type="number" id="sub_u20s" class="q-input" min="0" value="0"></div>
+                <div class="input-item"><label for="sub_u40u40">10から40まで－10から40まで</label><input type="number" id="sub_u40u40" class="q-input" min="0" value="0"></div>
+            </div>
+            <h3>かけざん</h3>
+            <div class="input-group">
+                <div class="input-item"><label for="mul_count">合計問題数</label><input type="number" id="mul_count" class="q-input" min="0" value="2"></div>
+                <label style="margin-top: 10px; font-weight:normal;">対象の段 (複数選択可)</label>
+                <div id="mul_tables" style="font-size:0.9em;">
+                    <input type="checkbox" id="table2" value="2" checked><label for="table2" style="display:inline-block; margin-right:5px;">2</label>
+                    <input type="checkbox" id="table3" value="3" checked><label for="table3" style="display:inline-block; margin-right:5px;">3</label>
+                    <input type="checkbox" id="table4" value="4"><label for="table4" style="display:inline-block; margin-right:5px;">4</label>
+                    <input type="checkbox" id="table5" value="5"><label for="table5" style="display:inline-block; margin-right:5px;">5</label>
+                    <input type="checkbox" id="table6" value="6"><label for="table6" style="display:inline-block; margin-right:5px;">6</label>
+                    <input type="checkbox" id="table7" value="7"><label for="table7" style="display:inline-block; margin-right:5px;">7</label>
+                    <input type="checkbox" id="table8" value="8"><label for="table8" style="display:inline-block; margin-right:5px;">8</label>
+                    <input type="checkbox" id="table9" value="9"><label for="table9" style="display:inline-block;">9</label>
+                </div>
+            </div>
+            <h3>わりざん (あまりなし)</h3>
+            <div class="input-group">
+                <div class="input-item"><label for="div_kuku">かけざん九九の範囲内</label><input type="number" id="div_kuku" class="q-input" min="0" value="2"></div>
+                <div class="input-item"><label for="div_u99s">99まで÷ひとけた</label><input type="number" id="div_u99s" class="q-input" min="0" value="0"></div>
             </div>
         </div>
-        <h3>わりざん (あまりなし)</h3>
-        <div class="input-group">
-            <div class="input-item"><label for="div_kuku">かけざん九九の範囲内</label><input type="number" id="div_kuku" class="q-input" min="0" value="2"></div>
-            <div class="input-item"><label for="div_u99s">99まで÷ひとけた</label><input type="number" id="div_u99s" class="q-input" min="0" value="0"></div>
+        <!-- REVISED: ボタンをスクロールエリアの外に配置 -->
+        <div id="generateBtn-wrapper">
+             <button id="generateBtn">もんだいスタート！</button>
         </div>
-        <button id="generateBtn">もんだいスタート！</button>
     </div>
 
     <div id="main-content">
