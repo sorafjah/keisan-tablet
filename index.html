@@ -322,7 +322,6 @@
             if(inputs.length > 0) inputs[0].focus();
         };
 
-        // ★★★ ここからが修正箇所です ★★★
         const setupEnterKeyNavigation = () => {
             const inputs = document.querySelectorAll('.answer-input');
             inputs.forEach(input => {
@@ -335,8 +334,6 @@
                         const nextInput = document.querySelector(`.answer-input[data-index="${nextIndex}"]`);
                         
                         const scrollBehavior = isTouchDevice ? 'auto' : 'smooth';
-                        // ★★★ 安定版のロジックに戻しました ★★★
-                        // iPadでは'nearest'（見える位置）、PCでは'center'（中央）にスクロールします
                         const scrollBlock = isTouchDevice ? 'nearest' : 'center'; 
 
                         if (nextInput) {
@@ -356,11 +353,14 @@
             });
         };
         
+        // ★★★ ここからが修正箇所です ★★★
         const showSettings = () => {
             sidebar.classList.remove('hidden');
             showSettingsBtn.classList.add('hidden');
             problemList.innerHTML = '<li>左のメニューから問題数などをえらんで、「もんだいスタート！」ボタンをおしてね。</li>';
             controlPanel.classList.add('hidden');
+            // ★追加: サイドバーを常に一番上にスクロールする
+            sidebar.scrollTop = 0;
         };
 
         const resetControlPanel = () => {
