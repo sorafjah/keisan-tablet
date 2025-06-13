@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>計算トレーニング for iPad</title>
+    <style>
+        /* 基本的なスタイル */
+        :root {
+            --primary-color: #667eea;
+            --primary-hover-color: #5a67d8;
+            --correct-color: #38a169;
+            --incorrect-color: #e53e3e;
+        }
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+            display: flex;
+            margin: 0;
+            height: 100vh;
+            background-color: #f4f4f9;
+            overflow: hidden; /* 全体のスクロールを禁止 */
+        }
+        #sidebar {
+            width: 350px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        #main-content {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* 問題エリアのみスクロール可能に */
+        }
+
+        /* サイドバー（設定エリア）のスタイル */
+        h2, h3 {
+            color: #333;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 5px;
+        }
+        h2 { font-size: 1.4em; margin-top: 0; }
+        h3 { font-size: 1.1em; color: #555; border-bottom: 1px solid #ccc; margin-top: 25px; padding-left: 10px; border-left: 5px solid #a3bffa;}
+        .input-group { margin-bottom: 15px; padding-left: 10px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
+        .input-item { display: flex; align-items: center; margin-bottom: 8px; }
+        .input-item label { flex: 1; margin-bottom: 0; font-weight: normal; }
+        .input-item input[type="number"] { width: 60px; padding: 10px; border-radius: 4px; border: 1px solid #ccc; text-align: center; font-size: 1em; }
+        #generateBtn {
+            width: 100%; padding: 15px; font-size: 1.2em; font-weight: bold; background-color: var(--primary-color);
+            color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px;
+        }
+        #generateBtn:hover { background-color: var(--primary-hover-color); }
+
+        /* 問題表示エリアのスタイル */
+        #problem-area {
+            width: 100%;
+        }
+        #problem-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+        .problem-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.8em; /* 文字を大きく見やすく */
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .problem-text {
+            width: 200px; /* 問題文の幅を固定 */
+            font-weight: bold;
+        }
+        .answer-input {
+            width: 100px;
+            font-size: 1em;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 0 20px;
+        }
+        .answer-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        .feedback {
+            font-size: 1.2em;
+            font-weight: bold;
+            width: 50px; /* 採点結果の表示エリア幅 */
+        }
+        .feedback.correct { color: var(--correct-color); }
+        .feedback.incorrect { color: var(--incorrect-color); }
+        
+        /* コントロールパネルのスタイル */
+        #control-panel {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            position: sticky;
+            bottom: 20px; /* 下部に固定 */
+        }
+        .action-button {
+            flex-grow: 1;
+            padding: 20px;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #check-answers-btn { background-color: var(--correct-color); }
+        #retry-btn { background-color: var(--primary-color); }
+        #result-display {
+            flex-grow: 2;
+            text-align: center;
+            font-size: 1.6em;
+            font-weight: bold;
+            align-self: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h3 style="margin-top: 0;">出題順</h3>
+        <div class="input-group">
+            <input type="radio" id="order-sequential" name="order" value="sequential" checked>
+            <label for="order-sequential" style="display: inline-block;">たしざんから順に出題</label><br>
+            <input type="radio" id="order-random" name="order" value="random">
+            <label for="order-random" style="display: inline-block;">混ぜてランダム出題</label>
+        </div>
+
+        <h3>たしざん</h3>
+        <div class="input-group">
+            <div class="input-item"><label for="add_ss">ひとけた＋ひとけた</label><input type="number" id="add_ss" class="q-input" min="0" value="5"></div>
+            <div class="input-item"><label for="add_u20s">10から20まで+ひとけた</label><input type="number" id="add_u20s" class="q-input" min="0" value="0"></div>
+            <div class="input-item"><label for="add_u40u40">10から40まで+10から40まで</label><input type="number" id="add_u40u40" class="q-input" min="0" value="0"></div>
+        </div>
+
+        <h3>ひきざん</h3>
+        <div class="input-group">
+            <div class="input-item"><label for="sub_ss">ひとけた－ひとけた</label><input type="number" id="sub_ss" class="q-input" min="0" value="5"></div>
+            <div class="input-item"><label for="sub_u20s">10から20まで－ひとけた</label><input type="number" id="sub_u20s" class="q-input" min="0" value="0"></div>
+            <div class="input-item"><label for="sub_u40u40">10から40まで－10から40まで</label><input type="number" id="sub_u40u40" class="q-input" min="0" value="0"></div>
+        </div>
+
+        <h3>かけざん</h3>
+        <div class="input-group">
+            <div class="input-item"><label for="mul_count">合計問題数</label><input type="number" id="mul_count" class="q-input" min="0" value="5"></div>
+            <label style="margin-top: 10px; font-weight:normal;">対象の段 (複数選択可)</label>
+            <div id="mul_tables" style="font-size:0.9em;">
+                <input type="checkbox" id="table2" value="2" checked><label for="table2" style="display:inline-block; margin-right:5px;">2</label>
+                <input type="checkbox" id="table3" value="3" checked><label for="table3" style="display:inline-block; margin-right:5px;">3</label>
+                <input type="checkbox" id="table4" value="4"><label for="table4" style="display:inline-block; margin-right:5px;">4</label>
+                <input type="checkbox" id="table5" value="5"><label for="table5" style="display:inline-block; margin-right:5px;">5</label>
+                <input type="checkbox" id="table6" value="6"><label for="table6" style="display:inline-block; margin-right:5px;">6</label>
+                <input type="checkbox" id="table7" value="7"><label for="table7" style="display:inline-block; margin-right:5px;">7</label>
+                <input type="checkbox" id="table8" value="8"><label for="table8" style="display:inline-block; margin-right:5px;">8</label>
+                <input type="checkbox" id="table9" value="9"><label for="table9" style="display:inline-block;">9</label>
+            </div>
+        </div>
+        
+        <h3>わりざん (あまりなし)</h3>
+        <div class="input-group">
+            <div class="input-item"><label for="div_kuku">かけざん九九の範囲内</label><input type="number" id="div_kuku" class="q-input" min="0" value="5"></div>
+            <div class="input-item"><label for="div_u99s">99まで÷ひとけた</label><input type="number" id="div_u99s" class="q-input" min="0" value="0"></div>
+        </div>
+        
+        <button id="generateBtn">もんだいスタート！</button>
+    </div>
+
+    <div id="main-content">
+        <h2>✏️ 計算トレーニング</h2>
+        <div id="problem-area">
+            <ul id="problem-list">
+                </ul>
+        </div>
+        <div id="control-panel">
+             <div id="result-display">がんばろう！</div>
+             <button id="check-answers-btn" class="action-button">こたえあわせ</button>
+             <button id="retry-btn" class="action-button">もういちどとく</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 問題生成関数群 (元のコードをそのまま利用) ---
+        const generateProblems = {
+            addition: (options) => {
+                let problems = [];
+                if (options.single_single > 0) {
+                    const possible = []; const added = new Set();
+                    for (let a = 1; a <= 9; a++) { for (let b = 1; b <= 9; b++) { const key = [a,b].sort().join(','); if (!added.has(key)) { possible.push({ p: `${a} ＋ ${b} =`, a: a + b }); added.add(key); } } }
+                    problems.push(...possible.sort(() => 0.5 - Math.random()).slice(0, options.single_single));
+                }
+                if (options.up_to_20_single > 0) {
+                    const possible = [];
+                    for (let a = 10; a <= 20; a++) { for (let b = 1; b <= 9; b++) { possible.push({ p: `${a} ＋ ${b} =`, a: a + b }); } }
+                    problems.push(...possible.sort(() => 0.5 - Math.random()).slice(0, options.up_to_20_single));
+                }
+                if (options.up_to_40_up_to_40 > 0) {
+                    const possible = []; const added = new Set();
+                    for (let a = 10; a <= 40; a++) { for (let b = 10; b <= 40; b++) { const key = [a,b].sort().join(','); if (!added.has(key)) { possible.push({ p: `${a} ＋ ${b} =`, a: a + b }); added.add(key); } } }
+                    problems.push(...possible.sort(() => 0.5 - Math.random()).slice(0, options.up_to_40_up_to_40));
+                }
+                return problems;
+            },
+            subtraction: (options) => {
+                let problems = [];
+                if (options.single_single > 0) {
+                    const possible = [];
+                    for (let a = 1; a <= 9; a++) { for (let b = 1; b <= 9; b++) { if (a > b) possible.push({ p: `${a} － ${b} =`, a: a - b }); } }
+                    problems.push(...possible.sort(() => 0.5 - Math.random()).slice(0, options.single_single));
+                }
+                if (options.up_to_20_single > 0) {
+                    const possible = [];
+                    for (let a = 10; a <= 20; a++) { for (let b = 1; b <= 9; b++) { if (a > b) possible.push({ p: `${a} － ${b} =`, a: a - b }); } }
+                    problems.push(...possible.sort(() => 0.5 - Math.random()).slice(0, options.up_to_20_single));
+                }
+                if (options.up_to_40_up_to_40 > 0) {
+                    const possible = [];
+                    for (let a = 10; a <= 40; a++) { for (let b = 10; b <= 40; b++) { if (a > b) possible.push({ p: `${a} － ${b} =`, a: a - b }); } }
+                    problems.push(...possible.sort(() => 0.5 - Math.random()).slice(0, options.up_to_40_up_to_40));
+                }
+                return problems;
+            },
+            multiplication: (options) => {
+                if (!options.tables.length || options.count === 0) return [];
+                const possible = []; const added = new Set();
+                for (const table of options.tables) { for (let i = 1; i <= 9; i++) { const key = [table, i].sort().join(','); if (!added.has(key)) { possible.push({p: `${table} × ${i} =`, a: table * i}); added.add(key); } } }
+                return possible.sort(() => 0.5 - Math.random()).slice(0, options.count);
+            },
+            division: (options) => {
+                let problems = [];
+                if (options.kuku_range > 0) {
+                    const possible = [];
+                    for (let a = 2; a <= 9; a++) { for (let b = 1; b <= 9; b++) { possible.push({ p: `${a * b} ÷ ${a} =`, a: b }); } }
+                    problems.push(...possible.sort(() => 0.5 - Math.random()).slice(0, options.kuku_range));
+                }
+                if (options.up_to_99_single > 0) {
+                    const possible = [];
+                    for (let a = 2; a <= 9; a++) { for (let b = 1; b <= Math.floor(99 / a); b++) { possible.push({ p: `${a * b} ÷ ${a} =`, a: b }); } }
+                    problems.push(...possible.sort(() => 0.5 - Math.random()).slice(0, options.up_to_99_single));
+                }
+                return problems;
+            }
+        };
+
+        // --- 新しいインタラクティブな機能 ---
+        const problemList = document.getElementById('problem-list');
+        const resultDisplay = document.getElementById('result-display');
+
+        const displayProblems = () => {
+            // 設定値を取得
+            const getInputValue = (id) => parseInt(document.getElementById(id).value, 10) || 0;
+            const getCheckedValues = (containerId) => Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(el => parseInt(el.value, 10));
+
+            const config = {
+                order: document.querySelector('input[name="order"]:checked').value,
+                addition: { single_single: getInputValue('add_ss'), up_to_20_single: getInputValue('add_u20s'), up_to_40_up_to_40: getInputValue('add_u40u40') },
+                subtraction: { single_single: getInputValue('sub_ss'), up_to_20_single: getInputValue('sub_u20s'), up_to_40_up_to_40: getInputValue('sub_u40u40') },
+                multiplication: { count: getInputValue('mul_count'), tables: getCheckedValues('mul_tables') },
+                division: { kuku_range: getInputValue('div_kuku'), up_to_99_single: getInputValue('div_u99s') }
+            };
+            
+            // 問題を生成
+            let allProblems = [
+                ...generateProblems.addition(config.addition),
+                ...generateProblems.subtraction(config.subtraction),
+                ...generateProblems.multiplication(config.multiplication),
+                ...generateProblems.division(config.division),
+            ];
+
+            if (config.order === 'random') {
+                allProblems.sort(() => 0.5 - Math.random());
+            }
+
+            // 問題リストをクリア
+            problemList.innerHTML = '';
+            resultDisplay.textContent = 'がんばろう！';
+
+            if (allProblems.length === 0) {
+                problemList.innerHTML = '<li>問題数を設定して「もんだいスタート！」ボタンを押してね。</li>';
+                return;
+            }
+
+            // 問題をHTMLとして描画
+            allProblems.forEach((problem, index) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'problem-item';
+                
+                listItem.innerHTML = `
+                    <span class="problem-text">${index + 1}. ${problem.p}</span>
+                    <input type="number" class="answer-input" data-answer="${problem.a}">
+                    <span class="feedback"></span>
+                `;
+                problemList.appendChild(listItem);
+            });
+        };
+
+        const checkAnswers = () => {
+            const inputs = document.querySelectorAll('.answer-input');
+            let correctCount = 0;
+            let totalCount = inputs.length;
+
+            if (totalCount === 0) return;
+
+            inputs.forEach(input => {
+                const userAnswer = input.value;
+                const correctAnswer = input.dataset.answer;
+                const feedbackEl = input.nextElementSibling;
+                
+                feedbackEl.classList.remove('correct', 'incorrect');
+
+                if (userAnswer === '') {
+                     feedbackEl.textContent = '－'; // 未回答
+                } else if (userAnswer == correctAnswer) {
+                    feedbackEl.textContent = '○';
+                    feedbackEl.classList.add('correct');
+                    correctCount++;
+                } else {
+                    feedbackEl.textContent = '✕';
+                    feedbackEl.classList.add('incorrect');
+                }
+            });
+
+            resultDisplay.textContent = `${totalCount}問中 ${correctCount}問正解！`;
+        };
+
+        const retryProblems = () => {
+            const inputs = document.querySelectorAll('.answer-input');
+            inputs.forEach(input => {
+                input.value = '';
+                const feedbackEl = input.nextElementSibling;
+                feedbackEl.textContent = '';
+                feedbackEl.classList.remove('correct', 'incorrect');
+            });
+            resultDisplay.textContent = 'がんばろう！';
+            problemList.scrollTop = 0; // 一番上までスクロール
+            // 最初の入力欄にフォーカスを当てる
+            if(inputs.length > 0) {
+                inputs[0].focus();
+            }
+        };
+
+        // --- イベントリスナーの設定 ---
+        document.getElementById('generateBtn').addEventListener('click', displayProblems);
+        document.getElementById('check-answers-btn').addEventListener('click', checkAnswers);
+        document.getElementById('retry-btn').addEventListener('click', retryProblems);
+        
+        // --- 初期表示 ---
+        displayProblems();
+
+    </script>
+</body>
+</html>
