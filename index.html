@@ -43,6 +43,8 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            /* スクロールをスムーズにするため */
+            scroll-behavior: smooth;
         }
 
         /* サイドバー（設定エリア）のスタイル */
@@ -200,9 +202,9 @@
             <div id="control-panel" class="hidden">
                  <div id="result-display"></div>
                  <div class="button-container">
-                    <button id="check-answers-btn" class="action-button">こたえあわせ</button>
-                    <button id="retry-btn" class="action-button hidden">もういちど</button>
-                    <button id="new-problem-btn" class="action-button hidden">べつのもんだい</button>
+                     <button id="check-answers-btn" class="action-button">こたえあわせ</button>
+                     <button id="retry-btn" class="action-button hidden">もういちど</button>
+                     <button id="new-problem-btn" class="action-button hidden">べつのもんだい</button>
                  </div>
             </div>
         </div>
@@ -320,37 +322,42 @@
             if(inputs.length > 0) inputs[0].focus();
         };
 
-        // --- ★ここから修正 ---
+        // ★★★ ここからが修正箇所です ★★★
         const setupEnterKeyNavigation = () => {
             const inputs = document.querySelectorAll('.answer-input');
             inputs.forEach(input => {
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter') {
-                        event.preventDefault();
+                        event.preventDefault(); // Enterキーでのフォーム送信を防ぐ
                         
                         const currentIndex = parseInt(input.dataset.index, 10);
                         const nextIndex = currentIndex + 1;
                         const nextInput = document.querySelector(`.answer-input[data-index="${nextIndex}"]`);
                         
                         if (nextInput) {
-                            // requestAnimationFrame を使い、ブラウザの描画タイミングに合わせて処理を行う
-                            // これにより、フォーカス移動とスクロールの競合を防ぐ
+                            // requestAnimationFrameを使い、ブラウザの最適なタイミングで処理を実行
                             requestAnimationFrame(() => {
+                                // 次の入力欄にフォーカスを移す
                                 nextInput.focus();
-                                // スクロールオプションを 'nearest' に変更
-                                // これにより、要素が画面外にある場合のみ、最小限のスクロールが行われる
-                                nextInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                
+                                // 次の問題項目（li要素）を取得
+                                const nextItem = nextInput.closest('.problem-item');
+                                if (nextItem) {
+                                    // 次の問題が画面の中央に来るようにスムーズにスクロール
+                                    nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
                             });
                         } else {
-                            // 最後の問題の場合は、答え合わせボタンにフォーカス
+                            // 最後の問題の場合は、答え合わせボタンにフォーカスを当てる
                             checkAnswersBtn.focus();
+                            // コントロールパネル全体が見えるようにスクロール
                             controlPanel.scrollIntoView({ behavior: 'smooth', block: 'end' });
                         }
                     }
                 });
             });
         };
-        // --- ★ここまで修正 ---
+        // ★★★ ここまでが修正箇所です ★★★
         
         const showSettings = () => {
             sidebar.classList.remove('hidden');
