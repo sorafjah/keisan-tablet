@@ -43,8 +43,7 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            /* スクロールをスムーズにするため */
-            scroll-behavior: smooth;
+            /* JavaScriptで制御するためCSSのsmoothは削除 */
         }
 
         /* サイドバー（設定エリア）のスタイル */
@@ -228,6 +227,9 @@
         const checkAnswersBtn = document.getElementById('check-answers-btn');
         const retryBtn = document.getElementById('retry-btn');
         const newProblemBtn = document.getElementById('new-problem-btn');
+        // ★★★ 追加: タッチデバイスかどうかの判定 ★★★
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
 
         const displayProblems = () => {
             sidebar.classList.add('hidden');
@@ -334,24 +336,20 @@
                         const nextIndex = currentIndex + 1;
                         const nextInput = document.querySelector(`.answer-input[data-index="${nextIndex}"]`);
                         
+                        // PCとiPadでスクロールの挙動を切り替える
+                        const scrollBehavior = isTouchDevice ? 'auto' : 'smooth';
+
                         if (nextInput) {
-                            // requestAnimationFrameを使い、ブラウザの最適なタイミングで処理を実行
                             requestAnimationFrame(() => {
-                                // 次の入力欄にフォーカスを移す
                                 nextInput.focus();
-                                
-                                // 次の問題項目（li要素）を取得
                                 const nextItem = nextInput.closest('.problem-item');
                                 if (nextItem) {
-                                    // 次の問題が画面の中央に来るようにスムーズにスクロール
-                                    nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    nextItem.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
                                 }
                             });
                         } else {
-                            // 最後の問題の場合は、答え合わせボタンにフォーカスを当てる
                             checkAnswersBtn.focus();
-                            // コントロールパネル全体が見えるようにスクロール
-                            controlPanel.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                            controlPanel.scrollIntoView({ behavior: scrollBehavior, block: 'end' });
                         }
                     }
                 });
