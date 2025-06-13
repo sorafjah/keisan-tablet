@@ -334,10 +334,10 @@
                         const nextIndex = currentIndex + 1;
                         const nextInput = document.querySelector(`.answer-input[data-index="${nextIndex}"]`);
                         
-                        // デバイスの種類に応じてスクロール方法を定義
+                        // デバイスの種類に応じてスクロールアニメーションを定義
                         const scrollBehavior = isTouchDevice ? 'auto' : 'smooth';
-                        // ★ iPadでは'nearest'を、PCでは'center'を使用する
-                        const scrollBlock = isTouchDevice ? 'nearest' : 'center'; 
+                        // ★ PCでもiPadでも、要素を中央に配置してキーボードとの重なりを避ける
+                        const scrollBlock = 'center';
 
                         if (nextInput) {
                             requestAnimationFrame(() => {
