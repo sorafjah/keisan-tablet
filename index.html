@@ -86,7 +86,7 @@
             padding: 0;
             margin: 0;
             flex-grow: 1; /* リストが残りのスペースを埋める */
-             /* REVISED: キーボード対策でリストの下に十分な余白を確保 */
+            /* キーボード対策でリストの下に十分な余白を確保 */
             padding-bottom: 40vh;
         }
         .problem-item {
@@ -126,7 +126,7 @@
             text-align: center;
             font-size: 1.6em;
             font-weight: bold;
-            min-height: 1.2em; /* REVISED: 「がんばろう」削除後のレイアウトが崩れないように高さを確保 */
+            min-height: 1.2em; /* レイアウトが崩れないように高さを確保 */
         }
         .button-container {
             display: flex;
@@ -187,7 +187,7 @@
         </div>
         <button id="generateBtn">もんだいスタート！</button>
 
-        <!-- REVISED: ユーザーの提案通り、スクロール用の空白を増量 -->
+        <!-- スクロール用の空白 -->
         <div style="height: 150px;"></div>
     </div>
 
@@ -274,7 +274,11 @@
                 `;
                 problemList.appendChild(listItem);
             });
+            
+            // Enterキーでの移動設定を呼び出す
             setupEnterKeyNavigation();
+            // 最初の問題にフォーカスする
+            document.querySelector('.answer-input').focus();
         };
 
         const checkAnswers = () => {
@@ -315,28 +319,46 @@
                 feedbackEl.classList.remove('correct', 'incorrect');
             });
             resetControlPanel(); 
-            problemList.scrollTop = 0;
+            document.getElementById('main-content').scrollTop = 0; // スクロールを一番上に戻す
             if(inputs.length > 0) inputs[0].focus();
         };
 
+        // --- ここから修正 ---
         const setupEnterKeyNavigation = () => {
             const inputs = Array.from(document.querySelectorAll('.answer-input'));
             inputs.forEach((input, index) => {
                 input.addEventListener('keydown', (event) => {
+                    // Enterキーが押された時だけ処理する
                     if (event.key === 'Enter') {
+                        // デフォルトの動作（改行やフォーム送信）をキャンセル
                         event.preventDefault();
+                        
                         const nextIndex = index + 1;
+                        
+                        // もし次の問題があるなら
                         if (nextIndex < inputs.length) {
                             const nextInput = inputs[nextIndex];
-                            nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            // 次の入力欄にフォーカスを移動
                             nextInput.focus();
+                            // 画面の中央にスムーズにスクロールさせる
+                            // これにより、特にiPadなどでソフトウェアキーボードが表示されても入力欄が見やすくなる
+                            nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         } else {
-                            checkAnswersBtn.click();
+                            // ★修正点: これが最後の問題の場合の処理
+                            // 以前は自動で `checkAnswersBtn.click()` を呼び出して答え合わせをしていた。
+                            // これを、ボタンにフォーカスを移動するだけの処理に変更。
+                            // これにより、ユーザーが手動で「こたえあわせ」ボタンをタップ（またはEnter）する必要がある。
+                            // この変更が、最後の問題で意図せずスクロールしてしまう問題の解決にも繋がる。
+                            checkAnswersBtn.focus();
+                            
+                            // ボタンが画面内に表示されるように、コントロールパネル全体をスクロール
+                            controlPanel.scrollIntoView({ behavior: 'smooth', block: 'end' });
                         }
                     }
                 });
             });
         };
+        // --- ここまで修正 ---
         
         const showSettings = () => {
             sidebar.classList.remove('hidden');
@@ -346,7 +368,6 @@
         };
 
         const resetControlPanel = () => {
-            // REVISED: 「がんばろう！」を削除
             resultDisplay.textContent = '';
             checkAnswersBtn.classList.remove('hidden');
             retryBtn.classList.add('hidden');
